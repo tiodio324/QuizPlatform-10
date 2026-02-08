@@ -1,0 +1,16 @@
+@use '@/styles/globalColors' as *;
+
+.page { padding: 1.5rem; }
+.header { margin-bottom: 1.5rem; }
+.title { font-size: 1.75rem; font-weight: 700; color: $color-text-primary; margin: 0 0 0.25rem; }
+.subtitle { font-size: 0.9rem; color: $color-text-muted; margin: 0; }
+
+.statsRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.statCard { text-align: center; padding: 1.25rem; }
+.statValue { font-size: 2rem; font-weight: 700; color: $color-primary; }
+.statValue.success { color: $color-success; }
+.statValue.warning { color: $color-warning; }
+.statLabel { font-size: 0.85rem; color: $color-text-muted; margin-top: 0.25rem; }
+
+.filters { display: flex; gap: 1rem; margin-bottom: 1rem; padding: 1rem; }
+.filters > * { max-width: 300px; }

@@ -1,0 +1,69 @@
+@use '@/styles/globalColors' as *;
+@use '@/styles/variables' as *;
+@use '@/styles/mixins' as *;
+
+// Quiz-Platform: Игривый стиль с большими иконками
+.form {
+  @include flex-column;
+  gap: $spacing-xl;
+  align-items: center;
+}
+
+.roleSelector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-xl;
+  width: 100%;
+
+  @media (max-width: 420px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.roleButton {
+  @include flex-column;
+  @include flex-center;
+  gap: $spacing-md;
+  padding: $spacing-xl $spacing-lg;
+  background: linear-gradient(180deg, $color-bg-primary 0%, $color-bg-secondary 100%);
+  border: 2px solid $color-border-light;
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: all $transition-smooth;
+  
+  svg {
+    width: 52px;
+    height: 52px;
+    color: $color-primary-light;
+    transition: all $transition-smooth;
+  }
+  
+  span {
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $color-text-secondary;
+  }
+  
+  &:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: $color-primary;
+    box-shadow: 0 16px 40px rgba($color-primary, 0.2);
+    
+    svg { color: $color-primary; transform: scale(1.15) rotate(5deg); }
+  }
+  
+  &.active {
+    background: $color-primary;
+    border-color: $color-primary;
+    box-shadow: 0 8px 24px rgba($color-primary, 0.35);
+    
+    svg { color: $color-text-inverse; }
+    span { color: $color-text-inverse; }
+  }
+}
+
+.actions {
+  @include flex-center;
+  gap: $spacing-lg;
+  width: 100%;
+}

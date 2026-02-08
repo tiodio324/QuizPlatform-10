@@ -1,0 +1,1 @@
+export interface QuizResult { id: string; quizId: string; participantName: string; score: number; maxScore: number; percentage: number; answers: Record<string, string[]>; startedAt: string; completedAt: string; isActive: boolean; }

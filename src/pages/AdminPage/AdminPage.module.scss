@@ -1,0 +1,228 @@
+@use '@/styles/globalColors' as *;
+
+.page { padding: 1.5rem; }
+.header { margin-bottom: 1.5rem; }
+.title { font-size: 1.75rem; font-weight: 700; color: $color-text-primary; margin: 0; }
+.toolbar { display: flex; gap: 1rem; margin-bottom: 1rem; padding: 1rem; }
+.actions { display: flex; gap: 0.25rem; }
+.statusActions { display: flex; gap: 0.25rem; }
+.noAccess { font-size: 0.8rem; color: $color-text-light; font-style: italic; }
+.form { display: flex; flex-direction: column; gap: 1rem; }
+.modalFooter { display: flex; justify-content: flex-end; gap: 0.75rem; }
+
+/* ===== Question Constructor ===== */
+.questionsSection {
+  margin-top: 0.5rem;
+  border-top: 1px solid $color-border-light;
+  padding-top: 1rem;
+}
+
+.questionsSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.questionsSectionTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: $color-text-primary;
+  margin: 0;
+}
+
+.questionsEmpty {
+  text-align: center;
+  color: $color-text-light;
+  font-size: 0.9rem;
+  padding: 1.5rem 0;
+  margin: 0;
+}
+
+.questionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.questionItem {
+  border: 1px solid $color-border-light;
+  border-radius: 10px;
+  background: $color-bg-primary;
+  transition: border-color 250ms ease, box-shadow 250ms ease;
+  &:hover { border-color: $color-border-primary; }
+}
+
+.questionExpanded {
+  border-color: $color-primary-light;
+  box-shadow: 0 2px 8px $color-shadow;
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  gap: 0.75rem;
+}
+
+.questionHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.questionNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: $color-primary-lighter;
+  color: $color-primary-darkest;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.questionPreview {
+  font-size: 0.9rem;
+  color: $color-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.questionHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.questionPoints {
+  font-size: 0.8rem;
+  color: $color-text-muted;
+  background: $color-bg-tertiary;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.questionDelete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $color-text-light;
+  font-size: 0.9rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 150ms, background 150ms;
+  &:hover { color: $color-error; background: $color-error-light; }
+}
+
+.questionChevron {
+  font-size: 0.7rem;
+  color: $color-text-light;
+}
+
+.questionBody {
+  padding: 0 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  border-top: 1px solid $color-border-light;
+  padding-top: 0.85rem;
+}
+
+/* ===== Options ===== */
+.optionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.optionsLabel {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: $color-text-secondary;
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.optionCheck {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.optionCheckInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.optionCheckmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid $color-border-primary;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: white;
+  background: $color-bg-primary;
+  transition: all 200ms ease;
+}
+
+.optionCorrect {
+  background: $color-success;
+  border-color: $color-success;
+}
+
+.optionTextInput {
+  flex: 1;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid $color-border-light;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: $color-text-primary;
+  background: $color-bg-primary;
+  outline: none;
+  transition: border-color 200ms;
+  &:focus { border-color: $color-primary; }
+  &::placeholder { color: $color-text-light; }
+}
+
+.optionRemove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $color-text-light;
+  font-size: 0.85rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 150ms, background 150ms;
+  &:hover { color: $color-error; background: $color-error-light; }
+}

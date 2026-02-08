@@ -1,0 +1,58 @@
+@use '@/styles/globalColors' as *;
+@use '@/styles/variables' as *;
+@use '@/styles/mixins' as *;
+
+// Quiz-Platform: Игривые округлые карточки
+.card {
+  display: flex;
+  flex-direction: column;
+  background: $color-bg-primary;
+  border-radius: $radius-xl;
+  border: 2px solid $color-border-light;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  transition: all $transition-smooth;
+}
+
+.default { background: $color-bg-primary; }
+.outlined { 
+  background: transparent;
+  border: 2px solid $color-primary-light;
+}
+.elevated { 
+  background: $color-bg-primary; 
+  box-shadow: 0 8px 32px rgba($color-primary, 0.1);
+}
+
+.padding-none .content { padding: 0; }
+.padding-sm .content { padding: $spacing-sm; }
+.padding-md .content { padding: $spacing-md; }
+.padding-lg .content { padding: $spacing-xl; }
+
+.hoverable {
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: $color-primary;
+    box-shadow: 0 16px 48px rgba($color-primary, 0.2);
+  }
+}
+
+.header {
+  padding: $spacing-lg $spacing-xl;
+  background: linear-gradient(180deg, $color-bg-secondary 0%, $color-bg-primary 100%);
+  border-bottom: 1px solid $color-border-light;
+  
+  &:empty { display: none; }
+}
+
+.content { flex: 1; }
+
+.footer {
+  padding: $spacing-md $spacing-xl;
+  background: $color-bg-secondary;
+  border-top: 1px solid $color-border-light;
+  
+  &:empty { display: none; }
+}
