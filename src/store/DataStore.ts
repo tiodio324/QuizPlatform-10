@@ -1,12 +1,13 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { v4 as uuidv4 } from 'uuid';
-import { Quiz, QuizFormData, Question, QuestionFormData, QuizResult, FilterParams } from '@/types';
+import { Quiz, QuizFormData, Question, QuestionFormData, QuizResult, FilterParams, Host, HostFormData } from '@/types';
 import FirebaseService from '@/firebase';
+import { BUILTIN_HOST } from '@/constants/auth';
 import { authStore } from './AuthStore';
 
 export class DataStore {
-  quizzes: Quiz[] = []; questions: Question[] = []; results: QuizResult[] = [];
-  quizzesLoading = false; questionsLoading = false; resultsLoading = false;
+  quizzes: Quiz[] = []; questions: Question[] = []; results: QuizResult[] = []; hosts: Host[] = [];
+  quizzesLoading = false; questionsLoading = false; resultsLoading = false; hostsLoading = false;
   error: string | null = null; filters: FilterParams = {};
 
   constructor() { makeAutoObservable(this, {}, { autoBind: true }); }
@@ -34,11 +35,57 @@ export class DataStore {
   getQuizById = (id: string): Quiz | undefined => this.quizzes.find(q => q.id === id);
   getQuestionsForQuiz = (quizId: string): Question[] => this.activeQuestions.filter(q => q.quizId === quizId);
 
-  loadAllData = async (): Promise<void> => { await Promise.all([this.loadQuizzes(), this.loadQuestions(), this.loadResults()]); };
+  get activeHosts(): Host[] { return this.hosts.filter(h => h.isActive).sort((a, b) => a.name.localeCompare(b.name, 'ru')); }
+
+  get allHosts(): Host[] {
+    const builtin: Host = {
+      id: BUILTIN_HOST.id,
+      name: BUILTIN_HOST.name,
+      email: BUILTIN_HOST.email,
+      password: BUILTIN_HOST.password,
+      isActive: true,
+      isBuiltIn: true,
+      createdAt: '',
+    };
+    const dynamic = this.activeHosts.filter(h => h.email.toLowerCase() !== BUILTIN_HOST.email);
+    return [builtin, ...dynamic];
+  }
+
+  loadAllData = async (): Promise<void> => { await Promise.all([this.loadQuizzes(), this.loadQuestions(), this.loadResults(), this.loadHosts()]); };
 
   loadQuizzes = async (): Promise<void> => { this.quizzesLoading = true; try { const d = await FirebaseService.getData<Record<string, Quiz>>('quizzes'); runInAction(() => { this.quizzes = d ? Object.values(d) : []; this.quizzesLoading = false; }); } catch { runInAction(() => { this.error = 'Ошибка загрузки викторин'; this.quizzesLoading = false; }); } };
   loadQuestions = async (): Promise<void> => { this.questionsLoading = true; try { const d = await FirebaseService.getData<Record<string, Question>>('questions'); runInAction(() => { this.questions = d ? Object.values(d) : []; this.questionsLoading = false; }); } catch { runInAction(() => { this.error = 'Ошибка загрузки вопросов'; this.questionsLoading = false; }); } };
   loadResults = async (): Promise<void> => { this.resultsLoading = true; try { const d = await FirebaseService.getData<Record<string, QuizResult>>('results'); runInAction(() => { this.results = d ? Object.values(d) : []; this.resultsLoading = false; }); } catch { runInAction(() => { this.error = 'Ошибка загрузки результатов'; this.resultsLoading = false; }); } };
+  loadHosts = async (): Promise<void> => { this.hostsLoading = true; try { const d = await FirebaseService.getData<Record<string, Host>>('hosts'); runInAction(() => { this.hosts = d ? Object.values(d) : []; this.hostsLoading = false; }); } catch { runInAction(() => { this.error = 'Ошибка загрузки ведущих'; this.hostsLoading = false; }); } };
+
+  findHostByEmail = (email: string): Host | undefined => {
+    const normalized = email.trim().toLowerCase();
+    return this.activeHosts.find(h => h.email.toLowerCase() === normalized);
+  };
+
+  createHost = async (data: HostFormData): Promise<Host | null> => {
+    if (!authStore.isAdmin) return null;
+    const normalizedEmail = data.email.trim().toLowerCase();
+    if (normalizedEmail === BUILTIN_HOST.email || this.findHostByEmail(data.email)) return null;
+    const now = new Date().toISOString();
+    const host: Host = { id: uuidv4(), ...data, email: data.email.trim().toLowerCase(), isActive: true, createdAt: now };
+    try {
+      await FirebaseService.setData(`hosts/${host.id}`, host);
+      runInAction(() => { this.hosts.push(host); });
+      return host;
+    } catch { return null; }
+  };
+
+  deleteHost = async (id: string): Promise<boolean> => {
+    if (!authStore.isAdmin || id === BUILTIN_HOST.id) return false;
+    const i = this.hosts.findIndex(h => h.id === id);
+    if (i === -1) return false;
+    try {
+      await FirebaseService.updateData(`hosts/${id}`, { isActive: false });
+      runInAction(() => { this.hosts[i].isActive = false; });
+      return true;
+    } catch { return false; }
+  };
 
   createQuiz = async (data: QuizFormData): Promise<Quiz | null> => { if (!authStore.canCreateQuizzes()) return null; const now = new Date().toISOString(); const q: Quiz = { id: uuidv4(), ...data, questionsCount: 0, status: 'draft', isActive: true, createdAt: now, updatedAt: now }; try { await FirebaseService.setData(`quizzes/${q.id}`, q); runInAction(() => { this.quizzes.push(q); }); return q; } catch { return null; } };
   updateQuiz = async (id: string, data: Partial<QuizFormData>): Promise<boolean> => { if (!authStore.canManageQuizzes()) return false; const i = this.quizzes.findIndex(q => q.id === id); if (i === -1) return false; const u = { ...this.quizzes[i], ...data, updatedAt: new Date().toISOString() }; try { await FirebaseService.setData(`quizzes/${id}`, u); runInAction(() => { this.quizzes[i] = u; }); return true; } catch { return false; } };

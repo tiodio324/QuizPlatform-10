@@ -1,4 +1,5 @@
 export * from './user.types';
+export * from './host.types';
 export * from './quiz.types';
 export * from './question.types';
 export * from './result.types';

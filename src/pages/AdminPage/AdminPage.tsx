@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { dataStore, authStore, uiStore } from '@/store';
 import { Card, Button, Table, Modal, Input, Badge } from '@/components/UI';
 import type { TableColumn } from '@/components/UI';
-import type { Quiz, QuizFormData, QuizStatus, QuestionFormData, QuestionOption } from '@/types';
+import type { Quiz, QuizFormData, QuizStatus, QuestionFormData, QuestionOption, Host, HostFormData } from '@/types';
+import { isValidEmail } from '@/utils/validators';
 import styles from './AdminPage.module.scss';
 
 interface QuestionDraft {
@@ -24,19 +25,22 @@ const emptyQuestion = (): QuestionDraft => ({
   points: 1,
 });
 
-type AdminTab = 'quizzes';
+type AdminTab = 'quizzes' | 'hosts';
 
 export const AdminPage = observer(() => {
-  const { quizzes, quizzesLoading, createQuiz, updateQuiz, deleteQuiz, changeQuizStatus, getQuestionsForQuiz, saveQuestionsForQuiz } = dataStore;
+  const { quizzes, quizzesLoading, allHosts, hostsLoading, createQuiz, updateQuiz, deleteQuiz, changeQuizStatus, getQuestionsForQuiz, saveQuestionsForQuiz, createHost, deleteHost } = dataStore;
   const { isAdmin } = authStore;
 
-  const [_activeTab, _setActiveTab] = useState<AdminTab>('quizzes');
+  const [activeTab, setActiveTab] = useState<AdminTab>('quizzes');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<QuizFormData>({ title: '', description: '', timeLimit: undefined });
   const [questions, setQuestions] = useState<QuestionDraft[]>([]);
   const [expandedQ, setExpandedQ] = useState<string | null>(null);
+
+  const [hostModalOpen, setHostModalOpen] = useState(false);
+  const [hostForm, setHostForm] = useState<HostFormData>({ name: '', email: '', password: '' });
 
   const resetForm = () => {
     setForm({ title: '', description: '', timeLimit: undefined });
@@ -106,6 +110,33 @@ export const AdminPage = observer(() => {
 
   const handleDelete = (id: string) => {
     uiStore.showConfirm('Удаление', 'Удалить викторину?', async () => { await deleteQuiz(id); uiStore.showSuccess('Удалено'); });
+  };
+
+  const resetHostForm = () => setHostForm({ name: '', email: '', password: '' });
+
+  const openHostModal = () => {
+    resetHostForm();
+    setHostModalOpen(true);
+  };
+
+  const handleCreateHost = async () => {
+    if (!hostForm.name.trim()) { uiStore.showError('Введите имя'); return; }
+    if (!hostForm.email.trim()) { uiStore.showError('Введите email'); return; }
+    if (!isValidEmail(hostForm.email)) { uiStore.showError('Некорректный email'); return; }
+    if (!hostForm.password) { uiStore.showError('Введите пароль'); return; }
+    const created = await createHost(hostForm);
+    if (!created) { uiStore.showError('Не удалось создать ведущего. Возможно, email уже занят'); return; }
+    uiStore.showSuccess('Ведущий добавлен');
+    setHostModalOpen(false);
+    resetHostForm();
+  };
+
+  const handleDeleteHost = (host: Host) => {
+    uiStore.showConfirm('Удаление', `Удалить ведущего «${host.name}»?`, async () => {
+      const ok = await deleteHost(host.id);
+      if (ok) uiStore.showSuccess('Ведущий удалён');
+      else uiStore.showError('Ошибка удаления');
+    });
   };
 
   const handleStatusChange = async (quiz: Quiz, newStatus: QuizStatus) => {
@@ -200,13 +231,60 @@ export const AdminPage = observer(() => {
     )},
   ];
 
+  const hostColumns: TableColumn<Host>[] = [
+    { key: 'name', title: 'Имя', render: (h: Host) => (
+      <span className={styles.hostNameCell}>
+        {h.name}
+        {h.isBuiltIn && <Badge variant="primary">Встроенный</Badge>}
+      </span>
+    )},
+    { key: 'email', title: 'Email', render: (h: Host) => h.email },
+    { key: 'actions', title: '', width: '80px', render: (h: Host) => (
+      h.isBuiltIn ? null : (
+        <div className={styles.actions}>
+          <Button size="sm" variant="ghost" onClick={() => handleDeleteHost(h)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
+          </Button>
+        </div>
+      )
+    )},
+  ];
+
   return (
     <div className={styles.page}>
-      <div className={styles.header}><h1 className={styles.title}>Управление викторинами</h1></div>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Управление</h1>
+        {isAdmin && (
+          <div className={styles.tabs}>
+            <button type="button" className={`${styles.tab} ${activeTab === 'quizzes' ? styles.tabActive : ''}`} onClick={() => setActiveTab('quizzes')}>
+              Викторины
+            </button>
+            <button type="button" className={`${styles.tab} ${activeTab === 'hosts' ? styles.tabActive : ''}`} onClick={() => setActiveTab('hosts')}>
+              Ведущие
+            </button>
+          </div>
+        )}
+      </div>
+
+      {activeTab === 'quizzes' && (
+        <>
       <Card className={styles.toolbar}><Button variant="primary" onClick={openCreateModal}>Создать викторину</Button></Card>
       <Card padding="none">
         <Table columns={columns} data={quizzes.filter(q => q.isActive)} keyField="id" loading={quizzesLoading} emptyText="Нет викторин" />
       </Card>
+        </>
+      )}
+
+      {activeTab === 'hosts' && isAdmin && (
+        <>
+          <Card className={styles.toolbar}>
+            <Button variant="primary" onClick={openHostModal}>Добавить ведущего</Button>
+          </Card>
+          <Card padding="none">
+            <Table columns={hostColumns} data={allHosts} keyField="id" loading={hostsLoading} emptyText="Нет ведущих" />
+          </Card>
+        </>
+      )}
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={modalMode === 'create' ? 'Создать викторину' : 'Редактировать'} size="lg"
         footer={<div className={styles.modalFooter}><Button variant="ghost" onClick={() => setModalOpen(false)}>Отмена</Button><Button variant="primary" onClick={handleSave}>Сохранить</Button></div>}>
@@ -294,6 +372,25 @@ export const AdminPage = observer(() => {
               ))}
             </div>
           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={hostModalOpen}
+        onClose={() => setHostModalOpen(false)}
+        title="Добавить ведущего"
+        size="sm"
+        footer={
+          <div className={styles.modalFooter}>
+            <Button variant="ghost" onClick={() => setHostModalOpen(false)}>Отмена</Button>
+            <Button variant="primary" onClick={handleCreateHost}>Сохранить</Button>
+          </div>
+        }
+      >
+        <div className={styles.form}>
+          <Input label="Имя *" value={hostForm.name} onChange={e => setHostForm({ ...hostForm, name: e.target.value })} placeholder="Иван Петров" />
+          <Input label="Email *" type="email" value={hostForm.email} onChange={e => setHostForm({ ...hostForm, email: e.target.value })} placeholder="host@example.com" />
+          <Input label="Пароль *" type="password" value={hostForm.password} onChange={e => setHostForm({ ...hostForm, password: e.target.value })} placeholder="Пароль для входа" />
         </div>
       </Modal>
     </div>

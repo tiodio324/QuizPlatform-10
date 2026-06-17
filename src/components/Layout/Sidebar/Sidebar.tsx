@@ -20,7 +20,7 @@ export const Sidebar = observer(() => {
 
   return (
     <>
-      {mobileMenuOpen && <div className={styles.overlay} onClick={closeMobileMenu} aria-hidden="true" />}
+      {/* {mobileMenuOpen && <div className={styles.overlay} onClick={closeMobileMenu} aria-hidden="true" />} */}
       <aside className={sidebarClasses}>
         <nav className={styles.nav}>
           <ul className={styles.navList}>

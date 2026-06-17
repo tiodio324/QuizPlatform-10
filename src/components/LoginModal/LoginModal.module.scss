@@ -7,6 +7,13 @@
   @include flex-column;
   gap: $spacing-xl;
   align-items: center;
+  width: 100%;
+}
+
+.fields {
+  @include flex-column;
+  gap: $spacing-lg;
+  width: 100%;
 }
 
 .roleSelector {

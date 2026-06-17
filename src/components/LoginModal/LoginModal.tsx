@@ -10,10 +10,26 @@ type LoginRole = Exclude<UserRole, 'viewer'>;
 export const LoginModal = observer(() => {
   const { loginModalOpen, closeLoginModal, login, loginError, isLoading } = authStore;
   const [selectedRole, setSelectedRole] = useState<LoginRole>('host');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => { e.preventDefault(); await login(selectedRole, password); if (!authStore.loginError) setPassword(''); };
-  const handleClose = () => { closeLoginModal(); setPassword(''); setSelectedRole('host'); };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await login(selectedRole, password, selectedRole === 'host' ? email : undefined);
+    if (!authStore.loginError) {
+      setPassword('');
+      setEmail('');
+    }
+  };
+
+  const handleClose = () => {
+    closeLoginModal();
+    setPassword('');
+    setEmail('');
+    setSelectedRole('host');
+  };
+
+  const canSubmit = selectedRole === 'host' ? !!email.trim() && !!password : !!password;
 
   return (
     <Modal isOpen={loginModalOpen} onClose={handleClose} title="Вход в систему" size="sm">
@@ -28,8 +44,33 @@ export const LoginModal = observer(() => {
             <span>Администратор</span>
           </button>
         </div>
-        <Input type="password" label="Пароль" placeholder="Введите пароль" value={password} onChange={(e) => setPassword(e.target.value)} error={loginError || undefined} autoFocus />
-        <Button type="submit" variant="primary" fullWidth loading={isLoading} disabled={!password}>Войти</Button>
+
+        <div className={styles.fields}>
+        {selectedRole === 'host' && (
+          <Input
+            type="email"
+            label="Email"
+            placeholder="Введите email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoFocus
+          />
+        )}
+
+        <Input
+          type="password"
+          label="Пароль"
+          placeholder="Введите пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={loginError || undefined}
+          autoFocus={selectedRole === 'admin'}
+        />
+
+        <Button type="submit" variant="primary" fullWidth loading={isLoading} disabled={!canSubmit}>
+          Войти
+        </Button>
+        </div>
       </form>
     </Modal>
   );

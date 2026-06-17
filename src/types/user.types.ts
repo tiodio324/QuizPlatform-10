@@ -1,5 +1,10 @@
 export type UserRole = 'viewer' | 'host' | 'admin';
-export interface User { role: UserRole; }
+export interface User {
+  role: UserRole;
+  name?: string;
+  email?: string;
+  hostId?: string;
+}
 export interface RolePermissions { canViewQuizzes: boolean; canJoinQuizzes: boolean; canCreateQuizzes: boolean; canManageQuizzes: boolean; canViewResults: boolean; canAccessAdmin: boolean; }
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
   viewer: { canViewQuizzes: true, canJoinQuizzes: true, canCreateQuizzes: false, canManageQuizzes: false, canViewResults: false, canAccessAdmin: false },

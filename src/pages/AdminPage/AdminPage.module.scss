@@ -1,12 +1,32 @@
 @use '@/styles/globalColors' as *;
 
 .page { padding: 1.5rem; }
-.header { margin-bottom: 1.5rem; }
+.header { margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
 .title { font-size: 1.75rem; font-weight: 700; color: $color-text-primary; margin: 0; }
+.tabs { display: flex; gap: 0.5rem; }
+.tab {
+  padding: 0.5rem 1rem;
+  border: 1px solid $color-border-light;
+  border-radius: 8px;
+  background: $color-bg-primary;
+  color: $color-text-secondary;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 200ms ease;
+  &:hover { border-color: $color-primary-light; color: $color-text-primary; }
+}
+.tabActive {
+  background: $color-primary;
+  border-color: $color-primary;
+  color: $color-text-inverse;
+  &:hover { color: $color-text-inverse; }
+}
 .toolbar { display: flex; gap: 1rem; margin-bottom: 1rem; padding: 1rem; }
 .actions { display: flex; gap: 0.25rem; }
 .statusActions { display: flex; gap: 0.25rem; }
 .noAccess { font-size: 0.8rem; color: $color-text-light; font-style: italic; }
+.hostNameCell { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .form { display: flex; flex-direction: column; gap: 1rem; }
 .modalFooter { display: flex; justify-content: flex-end; gap: 0.75rem; }
 
