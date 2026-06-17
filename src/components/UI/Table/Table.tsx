@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { observer } from 'mobx-react-lite';
 import styles from './Table.module.scss';
 
 export interface TableColumn<T> {
@@ -21,7 +22,7 @@ interface TableProps<T> {
   onRowClick?: (row: T) => void;
 }
 
-export const Table = <T extends object>({
+export const Table = observer(<T extends object>({
   columns,
   data,
   keyField,
@@ -108,4 +109,4 @@ export const Table = <T extends object>({
       </table>
     </div>
   );
-};
+}) as <T extends object>(props: TableProps<T>) => ReactNode;

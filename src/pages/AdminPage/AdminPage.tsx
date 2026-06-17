@@ -28,8 +28,8 @@ const emptyQuestion = (): QuestionDraft => ({
 type AdminTab = 'quizzes' | 'hosts';
 
 export const AdminPage = observer(() => {
-  const { quizzes, quizzesLoading, allHosts, hostsLoading, createQuiz, updateQuiz, deleteQuiz, changeQuizStatus, getQuestionsForQuiz, saveQuestionsForQuiz, createHost, deleteHost } = dataStore;
-  const { isAdmin } = authStore;
+  const { visibleQuizzes, quizzesLoading, allHosts, hostsLoading, createQuiz, updateQuiz, deleteQuiz, changeQuizStatus, getQuestionsForQuiz, saveQuestionsForQuiz, createHost, deleteHost } = dataStore;
+  const { isAdmin, ownsQuiz } = authStore;
 
   const [activeTab, setActiveTab] = useState<AdminTab>('quizzes');
   const [modalOpen, setModalOpen] = useState(false);
@@ -140,7 +140,7 @@ export const AdminPage = observer(() => {
   };
 
   const handleStatusChange = async (quiz: Quiz, newStatus: QuizStatus) => {
-    if (!isAdmin) { uiStore.showError('Только администратор может менять статус'); return; }
+    if (!ownsQuiz(quiz)) { uiStore.showError('Нет доступа к этой викторине'); return; }
     if (newStatus === 'active' && quiz.questionsCount === 0) {
       uiStore.showError('Невозможно опубликовать викторину без вопросов');
       return;
@@ -202,7 +202,7 @@ export const AdminPage = observer(() => {
     }},
     { key: 'questionsCount', title: 'Вопросов', width: '90px', render: (q: Quiz) => String(q.questionsCount) },
     { key: 'statusActions', title: 'Публикация', width: '160px', render: (q: Quiz) => {
-      if (!isAdmin) return <span className={styles.noAccess}>Только админ</span>;
+      if (!ownsQuiz(q)) return null;
       return (
         <div className={styles.statusActions}>
           {q.status === 'draft' && (
@@ -270,7 +270,7 @@ export const AdminPage = observer(() => {
         <>
       <Card className={styles.toolbar}><Button variant="primary" onClick={openCreateModal}>Создать викторину</Button></Card>
       <Card padding="none">
-        <Table columns={columns} data={quizzes.filter(q => q.isActive)} keyField="id" loading={quizzesLoading} emptyText="Нет викторин" />
+        <Table columns={columns} data={visibleQuizzes} keyField="id" loading={quizzesLoading} emptyText="Нет викторин" />
       </Card>
         </>
       )}

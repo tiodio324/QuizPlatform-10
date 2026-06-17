@@ -26,6 +26,18 @@ export class AuthStore {
     return 'Гость';
   }
 
+  get ownerId(): string | undefined {
+    if (this._user.hostId) return this._user.hostId;
+    if (this._user.role === 'host') return BUILTIN_HOST.id;
+    return undefined;
+  }
+
+  ownsQuiz = (quiz: { hostId?: string }): boolean => {
+    if (this.isAdmin) return true;
+    if (!this.isHost) return false;
+    return quiz.hostId === this.ownerId;
+  };
+
   canCreateQuizzes = (): boolean => this.permissions.canCreateQuizzes;
   canManageQuizzes = (): boolean => this.permissions.canManageQuizzes;
   canViewResults = (): boolean => this.permissions.canViewResults;
@@ -100,7 +112,7 @@ export class AuthStore {
       }
 
       if (trimmedEmail === BUILTIN_HOST.email && password === BUILTIN_HOST.password) {
-        this._user = { role: 'host', name: BUILTIN_HOST.name, email: BUILTIN_HOST.email };
+        this._user = { role: 'host', name: BUILTIN_HOST.name, email: BUILTIN_HOST.email, hostId: BUILTIN_HOST.id };
         this.saveAuthState();
         this.closeLoginModal();
         return true;

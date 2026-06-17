@@ -6,9 +6,9 @@ import type { QuizResult } from '@/types';
 import styles from './ResultsPage.module.scss';
 
 export const ResultsPage = observer(() => {
-  const { filteredResults, activeQuizzes, getQuizById, resultsLoading, setFilter, filters, averageScore } = dataStore;
+  const { filteredResults, visibleQuizzes, getQuizById, resultsLoading, setFilter, filters, averageScore } = dataStore;
 
-  const quizOptions = [{ value: '', label: 'Все викторины' }, ...activeQuizzes.map(q => ({ value: q.id, label: q.title }))];
+  const quizOptions = [{ value: '', label: 'Все викторины' }, ...visibleQuizzes.map(q => ({ value: q.id, label: q.title }))];
 
   const columns: TableColumn<QuizResult>[] = [
     { key: 'completedAt', title: 'Дата', width: '150px', render: (r: QuizResult) => new Date(r.completedAt).toLocaleString('ru-RU') },

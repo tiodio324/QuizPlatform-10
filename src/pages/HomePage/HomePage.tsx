@@ -11,9 +11,11 @@ const StatCard = ({ title, value, icon, color }: { title: string; value: number 
 );
 
 export const HomePage = observer(() => {
-  const { activeQuizzes, totalParticipants, averageScore, quizzesLoading } = dataStore;
+  const { visibleQuizzes, totalParticipants, averageScore, quizzesLoading, activeQuizzes } = dataStore;
   const { isHost, isAdmin } = authStore;
   const { navigate } = navigationStore;
+
+  const quizCount = isHost ? visibleQuizzes.length : activeQuizzes.length;
 
   return (
     <div className={styles.page}>
@@ -37,7 +39,7 @@ export const HomePage = observer(() => {
       </section>
 
       <section className={styles.stats}>
-        <StatCard title="Викторин" value={quizzesLoading ? '...' : activeQuizzes.length} color="primary"
+        <StatCard title="Викторин" value={quizzesLoading ? '...' : quizCount} color="primary"
           icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>} />
         {isHost && <>
           <StatCard title="Участников" value={totalParticipants} color="info"
@@ -56,7 +58,7 @@ export const HomePage = observer(() => {
             </div>
             <h3>Викторины</h3>
             <p>Принять участие</p>
-            <Badge variant="primary">{activeQuizzes.length} викторин</Badge>
+            <Badge variant="primary">{quizCount} викторин</Badge>
           </Card>
 
           {isHost && (
